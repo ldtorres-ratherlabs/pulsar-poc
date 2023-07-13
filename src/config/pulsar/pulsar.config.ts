@@ -4,4 +4,8 @@ export class PulsarConfig {
   @IsString()
   @IsNotEmpty()
   serviceUrl: string = process.env.PULSAR_SERVICE_URL || 'pulsar://localhost:6650';
+
+  authentication: string | null = null;
+
+  useTls = false;
 }

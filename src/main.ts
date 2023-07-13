@@ -1,3 +1,4 @@
+import { pulsarConfig } from '@Config/pulsar/pulsar.initializer';
 import { NestFactory } from '@nestjs/core';
 import { CustomStrategy } from '@nestjs/microservices';
 import { SwaggerModule } from '@nestjs/swagger';
@@ -5,7 +6,6 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { ConfigService } from './config/config.service';
 import { swaggerConfig } from './config/swagger/swagger.initializer';
-import { PulsarServer } from './pulsar/pulsar.server';
 import { SentryInitialize } from './sentry.config';
 
 async function bootstrap() {
@@ -15,13 +15,7 @@ async function bootstrap() {
 
   const config = app.get(ConfigService);
 
-  app.connectMicroservice<CustomStrategy>({
-    strategy: new PulsarServer({
-      serviceUrl: config.get('pulsar.serviceUrl'),
-      authentication: null,
-      useTls: false,
-    }),
-  });
+  app.connectMicroservice<CustomStrategy>(pulsarConfig(config));
 
   await app.startAllMicroservices();
 

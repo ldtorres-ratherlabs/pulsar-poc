@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { CustomTransportStrategy, Server } from '@nestjs/microservices';
 import { Client, ClientConfig, Consumer } from 'pulsar-client';
 
@@ -23,11 +24,12 @@ export class PulsarServer extends Server implements CustomTransportStrategy {
         listener: async (msg, consumer) => {
           const msgId = msg.getMessageId().toString();
 
-          console.log(
-            `Message received on [Consumer Name: ${
+          Logger.log(
+            `Pulsar Server - Message received on [Consumer Name: ${
               payload.consumerName || '-'
             }, Topic: ${msg.getTopicName()}]: Msg Id: ${msgId}`,
           );
+
           await value({ msg, consumer });
         },
       });
@@ -42,10 +44,14 @@ export class PulsarServer extends Server implements CustomTransportStrategy {
    * This method is triggered on application shutdown.
    */
   async close() {
-    this.consumers.forEach(async (consumer, key) => {
+    Logger.log('Pulsar Server Close Consumers');
+
+    const activeConsumers = Array.from(this.consumers.values());
+
+    for (let i = 0; i < activeConsumers.length; i++) {
+      const consumer = activeConsumers[i];
       await consumer.unsubscribe();
-      console.log('Consumer closed: ' + key);
-    });
+    }
 
     await this.client.close();
   }

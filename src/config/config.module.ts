@@ -25,6 +25,7 @@ const validate = (config: typeof process.env) => {
     NestConfigModule.forRoot({
       envFilePath: ['.env', `.env.${process.env.NODE_ENV}`],
       validate,
+      isGlobal: true,
     }),
   ],
   providers: [ConfigService],

@@ -4,8 +4,6 @@ import { ConfigService } from '../config.service';
 
 export const pulsarConfig = (config: ConfigService) => {
   return {
-    strategy: new PulsarServer({
-      serviceUrl: config.get('pulsar.serviceUrl'),
-    }),
+    strategy: new PulsarServer(config.get('pulsar')),
   } satisfies CustomStrategy;
 };

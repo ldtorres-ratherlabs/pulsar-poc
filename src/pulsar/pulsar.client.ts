@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { ClientProxy, ReadPacket, WritePacket } from '@nestjs/microservices';
 import { Client, ClientConfig, ProducerConfig, ReaderConfig } from 'pulsar-client';
 
@@ -8,21 +9,27 @@ export class PulsarClient extends ClientProxy {
   }
 
   async connect() {
+    Logger.log('Pulsar Client Initialized');
+
     if (this.client) return this.client;
+
     this.client = new Client(this.options);
     return this.client;
   }
 
   async createProducer(config: ProducerConfig) {
+    Logger.log('Create Pulsar Producer');
     return this.client.createProducer(config);
   }
 
   async createReader(config: ReaderConfig) {
+    Logger.log('Create Pulsar Reader');
     return this.client.createReader(config);
   }
 
   async close() {
     try {
+      Logger.log('Pulsar Client Close');
       if (this.client) await this.client.close();
     } catch (error) {
       console.log(error);

@@ -1,17 +1,24 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
+import { ClientProxyFactory } from '@nestjs/microservices';
 import { PulsarClient } from '../../pulsar/pulsar.client';
 import { RequestsController } from './request.controller';
+import { RequestService } from './request.service';
 
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: 'PULSAR_CLIENT',
-        customClass: PulsarClient,
-        options: { serviceUrl: 'pulsar://localhost:6650' },
+  providers: [
+    {
+      provide: 'PULSAR_CLIENT',
+      useFactory: (configService: ConfigService) => {
+        const options = configService.get('pulsar');
+        return ClientProxyFactory.create({
+          customClass: PulsarClient,
+          options,
+        });
       },
-    ]),
+      inject: [ConfigService],
+    },
+    RequestService,
   ],
   controllers: [RequestsController],
 })

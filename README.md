@@ -1,26 +1,10 @@
 # Pulsar Research PoC
 
-## Pulsar concepts
+### [Terminology](https://pulsar.apache.org/docs/3.0.x/reference-terminology/)
 
-### [Concepts](https://pulsar.apache.org/docs/3.0.x/reference-terminology)
+### [Concepts](https://pulsar.apache.org/docs/3.0.x/concepts-overview/)
 
-Main terminology for pulsar
-
-### [Geo replication](https://pulsar.apache.org/docs/3.0.x/concepts-replication/)
-
-This will allow us to understand how messages are replicated on Pulsar brokers and how they can be backed up in the event of a broker restart or shutdown.
-
-### [Messaging Flow](https://pulsar.apache.org/docs/3.0.x/concepts-messaging/)
-
-How messaging flow flow works
-
-Limitation: 
-
-As we know pulsar messages are byte arrays that we send to the consumer but also we can use schemas to set types of those byte arrays.
-
-Right now it is not currently available for NodeJs implementation
-
-More info: https://pulsar.apache.org/docs/next/schema-overview/
+### [Configuration Reference](https://pulsar.apache.org/reference/#/3.0.x/)
 
 ### [Pultar Consumer Docs](https://pulsar.apache.org/docs/next/concepts-messaging/#subscription-types)
 
@@ -64,9 +48,23 @@ The RedeliveryBackoff introduces a redelivery backoff mechanism. You can achieve
 
 More info: https://pulsar.apache.org/docs/next/client-libraries-consumers/#acknowledgment-timeout-redelivery-backoff
 
-## How pulsar works (Medium)
+# Some strategies 
 
-[Pulsar introduction](https://medium.com/streamthoughts/introduction-to-apache-pulsar-concepts-architecture-java-clients-71f1a30b75d6)
+[Compaction](https://pulsar.apache.org/docs/3.0.x/cookbooks-compaction/)
+
+This could be usefull when we needed to have a consumer that send reccurent data and the consumer could decide
+to read all menssages or the compacted messages
+
+[Message Deduplication](https://pulsar.apache.org/docs/3.0.x/cookbooks-deduplication/)
+
+This could be usefull when we want to handle repeated messages
+
+[Non persistent messages](https://pulsar.apache.org/docs/3.0.x/cookbooks-non-persistent/)
+
+[Retention Policy](https://pulsar.apache.org/docs/3.0.x/cookbooks-retention-expiry/)
+
+This could be usefull to handle deployments moments. Because we can configure if a message is retained even
+if the topic do not have any subscription.
 
 
 ## Run pulsar standalone with docker
@@ -79,16 +77,27 @@ docker run -it -p 6650:6650 -p 8080:8080 --mount source=pulsardata,target=/pulsa
 
 To interacte over pulsar server, create topics, etc
 
-[Pulsa Admin Docs](https://pulsar.apache.org/docs/2.10.x/pulsar-admin/)
+[Pulsa Admin Docs](https://pulsar.apache.org/docs/3.0.x/admin-api-overview/)
+
+#### Cheatsheet commands
+
+[Commands topics](https://pulsar.apache.org/docs/3.0.x/admin-api-topics/)
 
 #### Create topic
 
 You will need to attach to the pulsar console on docker
 
-#### Persistent topic
+#### Persistent or Non Persistent topic
 ```
 bin/pulsar-admin topics create persistent://public/default/my-topic
 ```
+
+OR
+
+```
+bin/pulsar-admin topics create non-persistent://public/default/my-topic
+```
+
 #### Write and read messages
 
 ##### Write
@@ -101,6 +110,13 @@ bin/pulsar-client produce my-topic --messages "$(seq -s, -f 'Message NO.%g' 1 10
 ```
 bin/pulsar-client consume my-topic -s 'my-subscription' -p Earliest -n 0
 ```
+
+## Pulsar NodeJs Client
+
+[NodeJs Client](https://pulsar.apache.org/docs/3.0.x/client-libraries-node/)
+
+[Examples](https://pulsar.apache.org/docs/3.0.x/client-libraries-producers/)
+
 
 ## Use Api to create a read messages
 
