@@ -1,0 +1,38 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+    "source.organizeImports": true
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "vsicons.associations.folders": [
+    {
+      "extensions": ["proto"],
+      "format": "svg",
+      "icon": "library"
+    },
+    {
+      "extensions": ["generated"],
+      "format": "svg",
+      "icon": "dist"
+    }
+  ],
+  "[markdown]": {
+    "editor.formatOnSave": false
+  },
+  "vsicons.associations.files": [
+    {
+      "extensions": ["entity.ts"],
+      "format": "svg",
+      "icon": "nest_pipe_ts"
+    },
+    {
+      "extension": ["controller.rest.ts", "controller.grpc.ts"],
+      "format": "svg",
+      "icon": "nest_controller_ts"
+    }
+  ],
+  "protoc": {
+    "options": ["--proto_path=./src"]
+  }
+}

@@ -1,0 +1,62 @@
+{
+	"info": {
+		"_postman_id": "fb64e720-6c79-4e86-8182-b2c1eadac75c",
+		"name": "Pulsar Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21461717"
+	},
+	"item": [
+		{
+			"name": "Pulsar requests",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:8000/requests",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"requests"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Request",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"value\": \"Testing Message\", // Value\n    \"partitionKey\": \"test\", // Group messages by a key\n    \"deliverAfter\": 30, // Delay seconds\n    \"times\": 1, // Number of messages\n    // Other params\n    // \"throwErr\": \"Test error\",\n    \"type\": \"Hi\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/requests",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"requests"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
