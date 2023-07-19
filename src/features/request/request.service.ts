@@ -28,6 +28,7 @@ export class RequestService {
       const producer = await client.createProducer({
         topic: TOPIC(),
         producerName: `producer-${TOPIC()}-${pid}`,
+        initialSequenceId: 1,
         sendTimeoutMs: 1000,
         blockIfQueueFull: true, // to avoid errors when we send the message,
         properties: {
@@ -73,11 +74,12 @@ export class RequestService {
           disableReplication: false, // This can be used to avoid replication on other clusters
         });
 
-        Logger.info(`Message Send and ACK - ID: ${res.toString()}`);
+        Logger.info(`Message Sent - ID: ${res.toString()}`);
 
         response.push(payload);
       }
 
+      await producer.flush();
       await producer.close();
 
       // Return msg

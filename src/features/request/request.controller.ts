@@ -1,6 +1,5 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { pid } from 'process';
-import { Pulsar } from '../../pulsar/pulsar.decorator';
+import { Pulsar } from 'src/pulsar/pulsar.decorator';
 import { TOPIC } from './constant';
 import { ReceiveMessage, RequestMessage } from './dto/request.dto';
 import { RequestService } from './request.service';
@@ -8,8 +7,8 @@ import { RequestService } from './request.service';
 const topicName = TOPIC();
 const topicNameDLT = `${topicName}-DLT`;
 
-const consumerName = `consumer-${topicName}-${pid}`;
-const consumerNameDLT = `consumer-${topicName}-${pid}-DLT`;
+const consumerName = `consumer-${topicName}`;
+const consumerNameDLT = `consumer-${topicName}-DLT`;
 
 @Controller('requests')
 export class RequestsController {
@@ -28,9 +27,10 @@ export class RequestsController {
   // Options reference: https://pulsar.apache.org/reference/#/3.0.x/client/client-configuration-consumer
   @Pulsar.Consumer({
     topic: topicName,
-    consumerName: consumerName, // Name
+    consumerName: consumerName + process.env.PULSAR_TOPIC_PRODUCER_NAME, // Name
     subscriptionType: 'Shared', // 'Exclusive' | 'Shared' | 'KeyShared' | 'Failover'
     subscriptionInitialPosition: 'Earliest', // Process Earliest or Latest
+
     nAckRedeliverTimeoutMs: 5000, // Time to retry again is its rejected
     deadLetterPolicy: {
       deadLetterTopic: topicNameDLT,
