@@ -1,5 +1,7 @@
+import { Logger } from '@Common//logger';
 import { Inject, Injectable } from '@nestjs/common';
 import * as moment from 'moment';
+import { pid } from 'process';
 import { PulsarClient } from 'src/pulsar/pulsar.client';
 import { v4 } from 'uuid';
 import { TOPIC } from './constant';
@@ -25,7 +27,12 @@ export class RequestService {
       // Options reference: https://pulsar.apache.org/reference/#/3.0.x/client/client-configuration-producer
       const producer = await client.createProducer({
         topic: TOPIC(),
-        producerName: 'Request Producer',
+        producerName: `producer-${TOPIC()}-${pid}`,
+        sendTimeoutMs: 1000,
+        blockIfQueueFull: true, // to avoid errors when we send the message,
+        properties: {
+          schemaVersion: 'v1',
+        },
       });
 
       const response = [];
@@ -48,11 +55,10 @@ export class RequestService {
 
         this.requests.push(payload);
 
-        await producer.send({
+        const res = await producer.send({
           data: Buffer.from(JSON.stringify(payload)),
           eventTimestamp: Date.now(),
-          // sequenceId: this.requests.length + 1, // This id could be an id from the database it can be used to avoid mesagge duplication
-          properties: { customId },
+          properties: { customId, schemaVersion: 'v1' },
           ...(partitionKey
             ? {
                 partitionKey,
@@ -67,6 +73,8 @@ export class RequestService {
           disableReplication: false, // This can be used to avoid replication on other clusters
         });
 
+        Logger.info(`Message Send and ACK - ID: ${res.toString()}`);
+
         response.push(payload);
       }
 
@@ -79,30 +87,35 @@ export class RequestService {
     }
   }
 
-  async handleMessage({ msg, consumer }: ReceiveMessage) {
+  async handleMessage({ msg, consumer }: ReceiveMessage, DLT = false) {
     const msgId = msg.getMessageId().toString();
-    const addittionalProperties = msg.getProperties();
+    const properties = msg.getProperties();
+    const data = JSON.parse(msg.getData().toString());
+
+    Logger.info(`Message received - retry: ${msg.getRedeliveryCount()}`);
 
     console.log({
+      topic: msg.getTopicName(),
       eventTime: msg.getEventTimestamp(),
       messageId: msgId,
       partitionKey: msg.getPartitionKey(),
       publishTime: msg.getPublishTimestamp(),
-      addittionalProperties,
-      data: msg.getData().toString(),
+      properties,
+      redeliveryCount: msg.getRedeliveryCount(),
+      data,
     });
 
-    const request = this.requests.find((el) => el.customId === addittionalProperties['customId']);
+    const request = this.requests.find((el) => el.customId === properties['customId']);
+    if (request) request.status = 'COMPLETED';
 
     // for testing non ack messages
-    if (addittionalProperties['throwErr']) {
+    if (data.reject && !DLT) {
       consumer.negativeAcknowledge(msg);
+    } else {
+      await consumer.acknowledge(msg);
 
-      throw new Error(addittionalProperties['throwErr']);
+      Logger.info(`Message received and ACK - ID: ${msgId}`);
     }
-
-    if (request) request.status = 'COMPLETED';
-    await consumer.acknowledge(msg);
   }
 
   findAll() {

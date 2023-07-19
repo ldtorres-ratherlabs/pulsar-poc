@@ -6,7 +6,7 @@ export interface RequestMessage {
   deliverAfter: number;
   times: number;
   type: string;
-  throwErr: string;
+  reject: boolean;
   customId: string;
   status: 'PENDING' | 'COMPLETED';
 }
