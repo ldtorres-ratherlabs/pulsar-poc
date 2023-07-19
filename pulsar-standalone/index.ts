@@ -2,7 +2,7 @@ import { configDotenv } from 'dotenv';
 
 configDotenv();
 
-import moment from 'moment';
+import * as moment from 'moment';
 
 const topicName = process.env.PULSAR_TOPIC_NAME || 'persistent://public/default/testing-2';
 const topicNameDLT = `${topicName}-DLT`;
@@ -61,6 +61,11 @@ export class PulsarClient {
         let nextMessage: Message | null = null;
 
         do {
+            if (!consumer.isConnected()) {
+                nextMessage = null;
+                return;
+            }
+
             nextMessage = await consumer.receive();
             await this.handleMessage({ msg: nextMessage, consumer })
         } while(nextMessage)
@@ -212,15 +217,15 @@ const init = async () => {
         subscriptionInitialPosition: 'Latest', // Process Earliest or Latest
     });
     
-    // 
-    /* await client.sendMessages({
+    // Send message
+    await client.sendMessages({
         "value": "Testing Message", // Value
         // "partitionKey": "test", // Group messages by a key
         "deliverAfter": 0, // Delay seconds
         "times": 1, // Number of messages
         // Extra params
         "type": "Hi"
-    }); */
+    });
 
 
     const closeConsumers = async () => {
