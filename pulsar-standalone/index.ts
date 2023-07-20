@@ -27,18 +27,13 @@ interface RequestMessage {
     status?: 'PENDING' | 'COMPLETED';
 }
 
-interface ReceiveMessage {
-    msg: Message;
-    consumer: Consumer;
-}
-
 import { Client, ClientConfig, Consumer, ConsumerConfig, Message, ProducerConfig, ReaderConfig } from 'pulsar-client';
 
 export class PulsarClient {
     private client: Client;
     public consumers: Consumer[] = []
 
-    constructor(private options: ClientConfig) { 
+    constructor(private options: ClientConfig) {
         this.client = new Client(this.options);
     }
 
@@ -58,20 +53,6 @@ export class PulsarClient {
 
         this.consumers.push(consumer);
 
-        let nextMessage: Message | null = null;
-
-        do {
-            if (!consumer.isConnected()) {
-                nextMessage = null;
-                return;
-            }
-
-            nextMessage = await consumer.receive();
-            await this.handleMessage({ msg: nextMessage, consumer })
-        } while(nextMessage)
-
-        console.log(`Pulsar Consumer ${config.consumerName} closed!`);
-        
         return consumer;
     }
 
@@ -85,7 +66,7 @@ export class PulsarClient {
         return this.client.createReader(config);
     }
 
-    async handleMessage({ msg, consumer }: ReceiveMessage, deadLetter = false) {
+    async handleMessage(msg: Message, consumer: Consumer) {
         const msgId = msg.getMessageId().toString();
         const properties = msg.getProperties();
         const data = JSON.parse(msg.getData().toString());
@@ -199,15 +180,16 @@ const init = async () => {
         consumerName: consumerName, // Name
         subscriptionType: 'Shared', // 'Exclusive' | 'Shared' | 'KeyShared' | 'Failover'
         subscriptionInitialPosition: 'Earliest', // Process Earliest or Latest
-    
+
         // nAckRedeliverTimeoutMs: 5000, // Time to retry again is its rejected
         /* deadLetterPolicy: {
           deadLetterTopic: topicNameDLT,
           initialSubscriptionName: consumerNameDLT,
           maxRedeliverCount: 1,
         }, */
+        listener: client.handleMessage
     });
-    
+
     // Dead letter consumer
     client.createConsumer({
         subscription: "DeadLetterSubcription",
@@ -215,8 +197,9 @@ const init = async () => {
         consumerName: consumerNameDLT, // Name
         subscriptionType: 'Shared', // 'Exclusive' | 'Shared' | 'KeyShared' | 'Failover'
         subscriptionInitialPosition: 'Latest', // Process Earliest or Latest
+        listener: client.handleMessage
     });
-    
+
     // Send message
     await client.sendMessages({
         "value": "Testing Message", // Value
@@ -227,19 +210,23 @@ const init = async () => {
         "type": "Hi"
     });
 
-
     const closeConsumers = async () => {
         for (let i = 0; i < client.consumers.length; i++) {
             const consumer = client.consumers[i];
-            if (consumer.isConnected()) await consumer.close();   
+            if (consumer.isConnected()) await consumer.close();
         }
-        
+
         console.log(`Pulsar End process!`);
+
+        process.exit(1);
     }
 
     process.on('SIGINT', closeConsumers);  // CTRL+C
     process.on('SIGQUIT', closeConsumers); // Keyboard quit
     process.on('SIGTERM', closeConsumers); // `kill` command
+
+    // Wait to close
+    process.stdin.resume();
 }
 
 init()

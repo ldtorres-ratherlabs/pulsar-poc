@@ -27,23 +27,23 @@ export class RequestsController {
   // Options reference: https://pulsar.apache.org/reference/#/3.0.x/client/client-configuration-consumer
   @Pulsar.Consumer({
     topic: topicName,
-    consumerName: consumerName + process.env.PULSAR_TOPIC_PRODUCER_NAME, // Name
+    consumerName: consumerName, // Name
     subscriptionType: 'Shared', // 'Exclusive' | 'Shared' | 'KeyShared' | 'Failover'
     subscriptionInitialPosition: 'Earliest', // Process Earliest or Latest
 
     nAckRedeliverTimeoutMs: 5000, // Time to retry again is its rejected
-    deadLetterPolicy: {
+    /* deadLetterPolicy: {
       deadLetterTopic: topicNameDLT,
       initialSubscriptionName: consumerNameDLT,
       maxRedeliverCount: 1,
-    },
+    }, */
   })
   async requestConsumer(data: ReceiveMessage) {
     return this.requestService.handleMessage(data);
   }
 
   // This consumer is used to process messages that did not received an ACK
-  @Pulsar.Consumer({
+  /* @Pulsar.Consumer({
     topic: topicNameDLT,
     consumerName: consumerNameDLT, // Name
     subscriptionType: 'Shared', // 'Exclusive' | 'Shared' | 'KeyShared' | 'Failover'
@@ -51,5 +51,5 @@ export class RequestsController {
   })
   async deadLetterConsumer(data: ReceiveMessage) {
     return this.requestService.handleMessage(data, true);
-  }
+  } */
 }

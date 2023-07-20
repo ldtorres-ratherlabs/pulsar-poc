@@ -1,7 +1,6 @@
 import { Logger } from '@Common//logger';
 import { Inject, Injectable } from '@nestjs/common';
 import * as moment from 'moment';
-import { pid } from 'process';
 import { PulsarClient } from 'src/pulsar/pulsar.client';
 import { v4 } from 'uuid';
 import { TOPIC } from './constant';
@@ -27,7 +26,7 @@ export class RequestService {
       // Options reference: https://pulsar.apache.org/reference/#/3.0.x/client/client-configuration-producer
       const producer = await client.createProducer({
         topic: TOPIC(),
-        producerName: `producer-${TOPIC()}-${pid}`,
+        producerName: `producer-${TOPIC()}`,
         initialSequenceId: 1,
         sendTimeoutMs: 1000,
         blockIfQueueFull: true, // to avoid errors when we send the message,
