@@ -48,9 +48,8 @@ export class PulsarServer extends Server implements CustomTransportStrategy {
 
     const activeConsumers = Array.from(this.consumers.values());
 
-    for (let i = 0; i < activeConsumers.length; i++) {
-      const consumer = activeConsumers[i];
-      await consumer.unsubscribe();
+    for (const consumer of activeConsumers) {
+      await consumer.close();
     }
 
     await this.client.close();
