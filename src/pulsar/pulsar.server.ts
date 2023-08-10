@@ -34,6 +34,14 @@ export class PulsarServer extends Server implements CustomTransportStrategy {
         },
       });
 
+      if (consumer.isConnected) {
+        Logger.log(
+          `Pulsar Server - Connected To Topic [${
+            payload.topic || payload.topics
+          }] - [Consumer Name: ${payload.consumerName || '-'}`,
+        );
+      }
+
       this.consumers.set(payload.consumerName, consumer);
     }
 

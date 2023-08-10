@@ -26,6 +26,7 @@ export class RequestsController {
 
   // Options reference: https://pulsar.apache.org/reference/#/3.0.x/client/client-configuration-consumer
   @Pulsar.Consumer({
+    subscription: 'PulsarRequestSuscription',
     topic: topicName,
     consumerName: consumerName, // Name
     subscriptionType: 'Shared', // 'Exclusive' | 'Shared' | 'KeyShared' | 'Failover'

@@ -1,11 +1,33 @@
+import { PulsarConfig } from '@Config/pulsar/pulsar.config';
 import { Logger } from '@nestjs/common';
 import { ClientProxy, ReadPacket, WritePacket } from '@nestjs/microservices';
-import { Client, ClientConfig, ProducerConfig, ReaderConfig } from 'pulsar-client';
+import {
+  AuthenticationToken,
+  Client,
+  ClientConfig,
+  ProducerConfig,
+  ReaderConfig,
+} from 'pulsar-client';
 
 export class PulsarClient extends ClientProxy {
   private client: Client;
-  constructor(private options: ClientConfig) {
+  private options: ClientConfig;
+
+  constructor(private params: PulsarConfig) {
     super();
+
+    const { authParams, ...rest } = this.params;
+
+    const auth: ClientConfig['authentication'] | null = authParams
+      ? new AuthenticationToken({
+          token: authParams,
+        })
+      : null;
+
+    this.options = {
+      authentication: auth,
+      ...rest,
+    };
   }
 
   async connect() {
